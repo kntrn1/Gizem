@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gizem'e</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d0d0f;
+    color: #e8e4dc;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  #countdown-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+  }
+
+  .ambient {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 30% 40%, rgba(20, 40, 100, 0.10) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 70%, rgba(10, 20, 70, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .content-wrap {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+  }
+
+  .icon {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    opacity: 0.4;
+    letter-spacing: 0.3em;
+    color: #8090c0;
+  }
+
+  .countdown-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #505870;
+    margin-bottom: 3.5rem;
+  }
+
+  .timer-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 3.5rem;
+  }
+
+  .time-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 1.5rem;
+  }
+
+  .time-unit:not(:last-child) {
+    border-right: 1px solid #1e1e1e;
+  }
+
+  .time-number {
+    font-family: 'Lora', serif;
+    font-size: clamp(3.5rem, 12vw, 6rem);
+    font-weight: 400;
+    color: #8ba0d0;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    min-width: 2.2ch;
+    text-align: center;
+  }
+
+  .time-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2a3050;
+    margin-top: 0.7rem;
+  }
+
+  .divider-line {
+    width: 40px;
+    height: 1px;
+    background: #181e38;
+    margin: 0 auto 2rem;
+  }
+
+  .waiting-text {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: #384060;
+    line-height: 1.7;
+  }
+
+  #letter-screen {
+    display: none;
+    min-height: 100vh;
+    padding: 5rem 2rem 6rem;
+    position: relative;
+  }
+
+  .letter-ambient {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 50% 15%, rgba(20, 40, 110, 0.09) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .letter-container {
+    position: relative;
+    z-index: 1;
+    max-width: 660px;
+    margin: 0 auto;
+  }
+
+  .letter-name {
+    font-family: 'Lora', serif;
+    font-size: clamp(3rem, 9vw, 5.5rem);
+    font-weight: 400;
+    color: #8ba0d8;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fadeUp 1.3s ease forwards;
+  }
+
+  .letter-subtitle {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #384060;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeUp 1.3s ease 0.3s forwards;
+  }
+
+  .letter-divider {
+    width: 50px;
+    height: 1px;
+    background: #1a2040;
+    margin: 0 0 3rem 0;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.55s forwards;
+  }
+
+  .letter-body {
+    font-family: 'Lora', serif;
+    font-size: 1.1rem;
+    line-height: 2.0;
+    color: #9aa0c0;
+    opacity: 0;
+    animation: fadeUp 1.3s ease 0.75s forwards;
+  }
+
+  .letter-body p {
+    margin-bottom: 1.8rem;
+  }
+
+  .letter-body .hl {
+    color: #b0c0e0;
+    font-style: italic;
+  }
+
+  .letter-sign {
+    margin-top: 3.5rem;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: #485070;
+    opacity: 0;
+    animation: fadeUp 1.3s ease 1.3s forwards;
+    line-height: 2;
+  }
+
+  .letter-sign .name {
+    display: block;
+    font-style: normal;
+    font-size: 1.35rem;
+    color: #6878a8;
+    margin-top: 0.3rem;
+  }
+
+  .bottom-line {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #1e2e5a 40%, #1e2e5a 60%, transparent 100%);
+    opacity: 0;
+    animation: fadeIn 2s ease 2s forwards;
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .pulse {
+    animation: pulse 4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 0.65; }
+  }
+</style>
+</head>
+<body>
+
+<div id="countdown-screen">
+  <div class="ambient"></div>
+  <div class="content-wrap">
+    <div class="icon pulse">— ✦ —</div>
+    <p class="countdown-label">Sana bir şey söylemek istiyorum</p>
+
+    <div class="timer-row">
+      <div class="time-unit">
+        <div class="time-number" id="hours">00</div>
+        <div class="time-label">saat</div>
+      </div>
+      <div class="time-unit">
+        <div class="time-number" id="minutes">00</div>
+        <div class="time-label">dakika</div>
+      </div>
+      <div class="time-unit">
+        <div class="time-number" id="seconds">00</div>
+        <div class="time-label">saniye</div>
+      </div>
+    </div>
+
+    <div class="divider-line"></div>
+    <p class="waiting-text">Biraz daha bekle, Gizem.</p>
+  </div>
+</div>
+
+<div id="letter-screen">
+  <div class="letter-ambient"></div>
+  <div class="letter-container">
+
+    <h1 class="letter-name">Gizem,</h1>
+    <p class="letter-subtitle">sana uzun zamandır söylemek istediklerim</p>
+    <div class="letter-divider"></div>
+
+    <div class="letter-body">
+      <p>
+        Gitar kursunda tanışmıştık. O kadar sıradan bir başlangıçtı ki, sonrasında bu kadar çok şey yaşayacağımızı hiç düşünmemiştim. Ama sen öyle birisin ki, sıradan başlangıçları olağanüstü yerlere taşıyorsun farkında bile olmadan.
+      </p>
+      <p>
+        Seninle yaşadıklarımı saymaya kalksam bitiremem. Ama hepsinin içinde ortak bir şey var: sen hep oradaydın. Değer vererek, ilgi göstererek, merak ederek. Bunlar küçük şeyler gibi görünüyor belki, ama aslında <span class="hl">bir insanın sana gerçekten baktığını hissettiren şeyler bunlar.</span> Ve sen bana baktın, Gizem.
+      </p>
+      <p>
+        Hayatta olan biten her şeye rağmen gülebilmek... Bu çok nadir bir şey. Çoğu insan güçlü görünmeye çalışır, sen ise gerçekten güçsün. O gülüşün arkasında neler taşıdığını biliyorum, o yüzden her güldüğünde ayrıca değer veriyorum buna. Çünkü <span class="hl">kazanılmış bir gülüş o.</span>
+      </p>
+      <p>
+        Bende bıraktığın iz şu: ne yaşarsam yaşayayım, gülmeyi hatırlayacağım. Bu küçük bir şey değil. Hayatta tutunmayı öğretmek bu biraz. Farkında mısın bilmiyorum ama bana bunu öğrettin.
+      </p>
+      <p>
+        Bir de şunu söylemeliyim, senin Bartın sevdan beni delirtiyor. O kadar seviyorsun ki o şehri, yan etkisi bana da geçti sanki. Yapacak bir şey yok, bu da senin bir özelliğin, sevdiklerini sevdiriyorsun.
+      </p>
+      <p>
+        Gittiğimde en çok taşıyacaklarımdan biri olacaksın. Hep güldür bizi, tamam mı?
+      </p>
+    </div>
+
+    <div class="letter-sign">
+      Çok değerlisin,
+      <span class="name">Ata</span>
+    </div>
+
+  </div>
+  <div class="bottom-line"></div>
+</div>
+
+<script>
+  const TARGET = new Date();
+  TARGET.setHours(17, 30, 0, 0);
+  if (TARGET <= new Date()) TARGET.setDate(TARGET.getDate() + 1);
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tick() {
+    const diff = TARGET - new Date();
+    if (diff <= 0) {
+      document.getElementById('countdown-screen').style.display = 'none';
+      document.getElementById('letter-screen').style.display = 'block';
+      return;
+    }
+    document.getElementById('hours').textContent   = pad(Math.floor(diff / 3600000));
+    document.getElementById('minutes').textContent = pad(Math.floor((diff % 3600000) / 60000));
+    document.getElementById('seconds').textContent = pad(Math.floor((diff % 60000) / 1000));
+  }
+
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
